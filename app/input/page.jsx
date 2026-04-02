@@ -1,59 +1,94 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function InputPage() {
+  const [players, setPlayers] = useState([]);
+  const [newPlayer, setNewPlayer] = useState("");
   const [player, setPlayer] = useState("");
   const [type, setType] = useState("");
   const [count, setCount] = useState("");
   const [shoulder, setShoulder] = useState("");
   const [elbow, setElbow] = useState("");
+  const [initialComment, setInitialComment] = useState("");
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem("players"));
+    if (saved) {
+      setPlayers(saved);
+    } else {
+      const initial = ["熊", "坂田", "末永", "五島", "松尾"];
+      localStorage.setItem("players", JSON.stringify(initial));
+      setPlayers(initial);
+    }
+  }, []);
+
+  const savePlayers = (list) => {
+    setPlayers(list);
+    localStorage.setItem("players", JSON.stringify(list));
+  };
+
+  const addPlayer = () => {
+    if (!newPlayer) return;
+    savePlayers([...players, newPlayer]);
+    setNewPlayer("");
+  };
+
+  const deletePlayer = (name) => {
+    savePlayers(players.filter((p) => p !== name));
+  };
 
   const handleSubmit = () => {
-    if (!player || !type || !count) {
-      alert("必須項目を入力してください");
-      return;
-    }
-
     const newItem = {
       id: Date.now(),
       player,
       type,
       count: Number(count),
-      shoulder: shoulder === "○",
-      elbow: elbow === "○",
-      comments: [], // ←ここ超重要
+      shoulder,
+      elbow,
+      initialComment,
+      date: new Date().toLocaleString(),
+      comments: [],
     };
 
     const existing = JSON.parse(localStorage.getItem("items")) || [];
-    const updated = [...existing, newItem];
-
-    localStorage.setItem("items", JSON.stringify(updated));
+    localStorage.setItem("items", JSON.stringify([...existing, newItem]));
 
     alert("保存成功！");
-
-    // 入力リセット
-    setPlayer("");
-    setType("");
-    setCount("");
-    setShoulder("");
-    setElbow("");
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>入力ページ</h1>
+    <div style={page}>
+      <h1>✏️ 入力ページ</h1>
 
-      <div>
-        <p>選手</p>
-        <input value={player} onChange={(e) => setPlayer(e.target.value)} />
+      <div style={card}>
+        <p>👤 選手</p>
+        <select value={player} onChange={(e) => setPlayer(e.target.value)}>
+          <option value="">選択</option>
+          {players.map((p) => (
+            <option key={p}>{p}</option>
+          ))}
+        </select>
+
+        <div>
+          <input
+            value={newPlayer}
+            onChange={(e) => setNewPlayer(e.target.value)}
+            placeholder="選手追加"
+          />
+          <button onClick={addPlayer}>追加</button>
+        </div>
+
+        {players.map((p) => (
+          <div key={p}>
+            {p} <button onClick={() => deletePlayer(p)}>削除</button>
+          </div>
+        ))}
       </div>
 
-      <div>
-        <p>投球タイプ</p>
+      <div style={card}>
+        <p>⚾ 投球タイプ</p>
         <input value={type} onChange={(e) => setType(e.target.value)} />
-      </div>
 
-      <div>
         <p>球数</p>
         <input
           type="number"
@@ -62,24 +97,53 @@ export default function InputPage() {
         />
       </div>
 
-      <div>
+      <div style={card}>
         <p>肩</p>
-        <button onClick={() => setShoulder("○")}>○</button>
-        <button onClick={() => setShoulder("△")}>△</button>
-        <button onClick={() => setShoulder("×")}>×</button>
-      </div>
+        <button style={{ background: "blue", color: "white" }} onClick={() => setShoulder("○")}>○</button>
+        <button style={{ background: "gold" }} onClick={() => setShoulder("△")}>△</button>
+        <button style={{ background: "red", color: "white" }} onClick={() => setShoulder("×")}>×</button>
 
-      <div>
         <p>肘</p>
-        <button onClick={() => setElbow("○")}>○</button>
-        <button onClick={() => setElbow("△")}>△</button>
-        <button onClick={() => setElbow("×")}>×</button>
+        <button style={{ background: "blue", color: "white" }} onClick={() => setElbow("○")}>○</button>
+        <button style={{ background: "gold" }} onClick={() => setElbow("△")}>△</button>
+        <button style={{ background: "red", color: "white" }} onClick={() => setElbow("×")}>×</button>
       </div>
 
-      <button onClick={handleSubmit} style={{ marginTop: 20 }}>
+      <div style={card}>
+        <p>💬 初期コメント</p>
+        <input
+          value={initialComment}
+          onChange={(e) => setInitialComment(e.target.value)}
+        />
+      </div>
+
+      <button style={saveBtn} onClick={handleSubmit}>
         保存
       </button>
     </div>
   );
 }
+
+const page = {
+  padding: 20,
+  background: "#f5f5f5",
+  minHeight: "100vh",
+};
+
+const card = {
+  background: "white",
+  padding: 15,
+  marginBottom: 10,
+  borderRadius: 10,
+};
+
+const saveBtn = {
+  padding: 15,
+  width: "100%",
+  background: "#4facfe",
+  color: "white",
+  border: "none",
+  borderRadius: 10,
+};
+
 

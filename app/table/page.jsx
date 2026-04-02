@@ -3,100 +3,78 @@ import { useState, useEffect } from "react";
 
 export default function Page() {
   const [items, setItems] = useState([]);
+  const [players, setPlayers] = useState([]);
+  const [currentPlayer, setCurrentPlayer] = useState("");
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("items")) || [];
-    setItems(saved);
+    const savedItems = JSON.parse(localStorage.getItem("items")) || [];
+    const savedPlayers = JSON.parse(localStorage.getItem("players")) || [];
+
+    setItems(savedItems);
+    setPlayers(savedPlayers);
+
+    if (savedPlayers.length > 0) {
+      setCurrentPlayer(savedPlayers[0]);
+    }
   }, []);
 
-  const saveToLocal = (data) => {
-    localStorage.setItem("items", JSON.stringify(data));
+  const isThisWeek = (dateStr) => {
+    const now = new Date();
+    const d = new Date(dateStr);
+
+    const first = new Date(now);
+    first.setDate(now.getDate() - now.getDay());
+
+    const last = new Date(first);
+    last.setDate(first.getDate() + 6);
+
+    return d >= first && d <= last;
   };
 
-  const handleSaveComment = (id, comment) => {
-    const newItems = items.map((item) => {
-      if (item.id === id) {
-        return {
-          ...item,
-          comments: [...(item.comments || []), comment],
-        };
-      }
-      return item;
-    });
+  const filtered = items.filter((i) => i.player === currentPlayer);
 
-    setItems(newItems);
-    saveToLocal(newItems);
-  };
-
-  const handleDelete = (id) => {
-    const newItems = items.filter((item) => item.id !== id);
-    setItems(newItems);
-    saveToLocal(newItems);
-  };
+  const weeklyTotal = filtered
+    .filter((i) => isThisWeek(i.date))
+    .reduce((sum, i) => sum + (i.count || 0), 0);
 
   return (
-    <div>
-      <h1>結果ページ</h1>
+    <div style={page}>
+      <h1>📊 結果ページ</h1>
 
-      {items.map((item) => (
-        <Item
-          key={item.id}
-          data={item}
-          onSave={handleSaveComment}
-          onDelete={handleDelete}
-        />
+      <select value={currentPlayer} onChange={(e) => setCurrentPlayer(e.target.value)}>
+        {players.map((p) => (
+          <option key={p}>{p}</option>
+        ))}
+      </select>
+
+      <p style={{ color: weeklyTotal >= 300 ? "red" : "black" }}>
+        今週の球数: {weeklyTotal}球
+        {weeklyTotal >= 300 && " ⚠注意"}
+      </p>
+
+      {filtered.map((item) => (
+        <div key={item.id} style={card}>
+          <p>{item.date}</p>
+          <p>⚾ {item.count}球</p>
+          <p>{item.type}</p>
+          <p>肩:{item.shoulder} / 肘:{item.elbow}</p>
+          <p>💬 {item.initialComment}</p>
+        </div>
       ))}
     </div>
   );
 }
 
-function Item({ data, onSave, onDelete }) {
-  const [comment, setComment] = useState("");
+const page = {
+  padding: 20,
+  background: "#f5f5f5",
+  minHeight: "100vh",
+};
 
-  return (
-    <div style={{ border: "1px solid gray", margin: 10, padding: 10 }}>
-      <p>球数: {data.count}</p>
-      <p>種類: {data.type}</p>
-      <p>
-        肩: {data.shoulder ? "○" : "×"} / 肘: {data.elbow ? "○" : "×"}
-      </p>
-
-      {/* 入力欄 */}
-      <input
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        placeholder="コメント入力"
-      />
-      <button
-        onClick={() => {
-          if (!comment) return;
-          onSave(data.id, comment);
-          setComment("");
-        }}
-      >
-        保存
-      </button>
-
-      {/* 👇ここがチャット表示 */}
-      <div style={{ marginTop: 10 }}>
-        <strong>コメント履歴:</strong>
-        {(data.comments || []).map((c, i) => (
-          <div
-            key={i}
-            style={{
-              background: "#eee",
-              marginTop: 5,
-              padding: 5,
-              borderRadius: 5,
-            }}
-          >
-            {c}
-          </div>
-        ))}
-      </div>
-
-      <button onClick={() => onDelete(data.id)}>削除</button>
-    </div>
-  );
-}
+const card = {
+  background: "white",
+  padding: 10,
+  marginBottom: 10,
+  borderRadius: 10,
+};
 
