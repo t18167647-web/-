@@ -80,6 +80,23 @@ export default function Page() {
     else setCurrentPlayer(players[(i - 1 + players.length) % players.length]);
   };
 
+  // 🔥 週間投球数（月曜リセット）
+  const getWeeklyCount = () => {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = (day === 0 ? -6 : 1) - day;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diff);
+    monday.setHours(0,0,0,0);
+
+    return items
+      .filter(i => i.player === currentPlayer)
+      .filter(i => new Date(i.date) >= monday)
+      .reduce((sum, i) => sum + (i.count || 0), 0);
+  };
+
+  const weekly = getWeeklyCount();
+
   return (
     <div style={page}>
       <Link href="/">
@@ -88,6 +105,20 @@ export default function Page() {
 
       <h1>📊 結果</h1>
 
+      {/* 週間投球数 */}
+      <div style={{
+        background:"white",
+        padding:10,
+        borderRadius:10,
+        marginBottom:10,
+        textAlign:"center",
+        fontWeight:"bold",
+        color: weekly > 300 ? "#f94144" : "#333"
+      }}>
+        今週の投球数：{weekly}球
+      </div>
+
+      {/* 選手切替 */}
       <div style={row}>
         <button style={arrowBtn} onClick={() => changePlayer("prev")} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>←</button>
         <select value={currentPlayer} onChange={(e)=>setCurrentPlayer(e.target.value)} style={{fontSize:"16px"}}>
@@ -254,6 +285,3 @@ const getCommentStyle=(a)=>{
   if(a==="久保先生") return {background:"#e0ffe0",borderLeft:"5px solid #43aa8b"};
   return {background:"#e0f0ff",borderLeft:"5px solid #4facfe"};
 };
-
-
-
