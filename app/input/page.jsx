@@ -1,135 +1,85 @@
 "use client";
-
 import { useState } from "react";
-import { db } from "../../lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
-import Link from "next/link";
 
 export default function InputPage() {
-  const [loading, setLoading] = useState(false);
-
-  const [player, setPlayer] = useState("熊");
-  const [pitchType, setPitchType] = useState("ブルペン");
-  const [pitchCount, setPitchCount] = useState("");
+  const [player, setPlayer] = useState("");
+  const [type, setType] = useState("");
+  const [count, setCount] = useState("");
   const [shoulder, setShoulder] = useState("");
   const [elbow, setElbow] = useState("");
-  const [comment, setComment] = useState("");
 
-  const handleSave = async () => {
-    if (!pitchCount) {
-      alert("球数を入力して");
+  const handleSubmit = () => {
+    if (!player || !type || !count) {
+      alert("必須項目を入力してください");
       return;
     }
 
-    try {
-      setLoading(true);
+    const newItem = {
+      id: Date.now(),
+      player,
+      type,
+      count: Number(count),
+      shoulder: shoulder === "○",
+      elbow: elbow === "○",
+      comments: [], // ←ここ超重要
+    };
 
-      await addDoc(collection(db, "pitch_data"), {
-        player,
-        pitchType,
-        pitchCount: Number(pitchCount),
-        shoulder,
-        elbow,
-        comment,
-        createdAt: new Date()
-      });
+    const existing = JSON.parse(localStorage.getItem("items")) || [];
+    const updated = [...existing, newItem];
 
-      alert("保存成功！");
+    localStorage.setItem("items", JSON.stringify(updated));
 
-      setPitchCount("");
-      setComment("");
-      setShoulder("");
-      setElbow("");
+    alert("保存成功！");
 
-    } catch (e) {
-      console.error(e);
-      alert("エラー：" + e.message);
-    }
-
-    setLoading(false);
-  };
-
-  const Button = ({ value, state, setState }) => {
-    const color =
-      value === "〇" ? "blue" : value === "△" ? "orange" : "red";
-
-    return (
-      <button
-        onClick={() => setState(value)}
-        style={{
-          margin: 5,
-          padding: 10,
-          background: state === value ? color : "#eee",
-          color: state === value ? "white" : "black",
-          border: "none",
-          borderRadius: 5
-        }}
-      >
-        {value}
-      </button>
-    );
+    // 入力リセット
+    setPlayer("");
+    setType("");
+    setCount("");
+    setShoulder("");
+    setElbow("");
   };
 
   return (
     <div style={{ padding: 20 }}>
       <h1>入力ページ</h1>
 
-      <Link href="/">← ホームに戻る</Link>
-
       <div>
         <p>選手</p>
-        <select value={player} onChange={(e) => setPlayer(e.target.value)}>
-          <option>熊</option>
-          <option>坂田</option>
-          <option>末永</option>
-          <option>五島</option>
-          <option>松尾</option>
-        </select>
+        <input value={player} onChange={(e) => setPlayer(e.target.value)} />
       </div>
 
       <div>
         <p>投球タイプ</p>
-        <select value={pitchType} onChange={(e) => setPitchType(e.target.value)}>
-          <option>ブルペン</option>
-          <option>実践練習</option>
-          <option>試合</option>
-        </select>
+        <input value={type} onChange={(e) => setType(e.target.value)} />
       </div>
 
       <div>
         <p>球数</p>
         <input
           type="number"
-          value={pitchCount}
-          onChange={(e) => setPitchCount(e.target.value)}
+          value={count}
+          onChange={(e) => setCount(e.target.value)}
         />
       </div>
 
       <div>
         <p>肩</p>
-        <Button value="〇" state={shoulder} setState={setShoulder} />
-        <Button value="△" state={shoulder} setState={setShoulder} />
-        <Button value="×" state={shoulder} setState={setShoulder} />
+        <button onClick={() => setShoulder("○")}>○</button>
+        <button onClick={() => setShoulder("△")}>△</button>
+        <button onClick={() => setShoulder("×")}>×</button>
       </div>
 
       <div>
         <p>肘</p>
-        <Button value="〇" state={elbow} setState={setElbow} />
-        <Button value="△" state={elbow} setState={setElbow} />
-        <Button value="×" state={elbow} setState={setElbow} />
+        <button onClick={() => setElbow("○")}>○</button>
+        <button onClick={() => setElbow("△")}>△</button>
+        <button onClick={() => setElbow("×")}>×</button>
       </div>
 
-      <div>
-        <p>コメント</p>
-        <input
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-        />
-      </div>
-
-      <button onClick={handleSave} disabled={loading}>
-        {loading ? "保存中..." : "保存"}
+      <button onClick={handleSubmit} style={{ marginTop: 20 }}>
+        保存
       </button>
     </div>
   );
 }
+
