@@ -115,8 +115,39 @@ export default function Page() {
 function Item({ item, addComment, editComment, deleteComment, deleteItem, press, release }) {
   const [text, setText] = useState("");
   const [author, setAuthor] = useState(item.player);
+
+  const [authors, setAuthors] = useState([]);
+  const [newAuthor, setNewAuthor] = useState("");
+  const [showManage, setShowManage] = useState(false);
+
   const [editIndex, setEditIndex] = useState(null);
   const [editText, setEditText] = useState("");
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem("authors"));
+    if (saved) setAuthors(saved);
+    else {
+      const init = ["宗田先生","久保先生"];
+      localStorage.setItem("authors", JSON.stringify(init));
+      setAuthors(init);
+    }
+  }, []);
+
+  const saveAuthors = (list) => {
+    setAuthors(list);
+    localStorage.setItem("authors", JSON.stringify(list));
+  };
+
+  const addAuthor = () => {
+    if (!newAuthor || authors.includes(newAuthor)) return;
+    saveAuthors([...authors, newAuthor]);
+    setNewAuthor("");
+  };
+
+  const deleteAuthor = (name) => {
+    saveAuthors(authors.filter(a=>a!==name));
+    if (author === name) setAuthor(item.player);
+  };
 
   return (
     <div style={card}>
@@ -131,20 +162,20 @@ function Item({ item, addComment, editComment, deleteComment, deleteItem, press,
         {item.type}
       </p>
 
-      <div style={{ display: "flex", gap: 8 }}>
+      <div style={{ display: "flex", gap: 6 }}>
         <span style={getConditionStyle(item.shoulder)}>肩:{item.shoulder}</span>
         <span style={getConditionStyle(item.elbow)}>肘:{item.elbow}</span>
       </div>
 
-      <div style={{background:"#eef",padding:8,borderRadius:8,marginTop:5}}>
+      <div style={{background:"#eef",padding:6,borderRadius:8,marginTop:4}}>
         💬 {item.initialComment}
       </div>
 
-      <div style={{ marginTop: 10 }}>
+      {/* 投稿 */}
+      <div style={{ marginTop: 8 }}>
         <select value={author} onChange={(e)=>setAuthor(e.target.value)} style={{fontSize:"16px"}}>
           <option value={item.player}>{item.player}</option>
-          <option value="宗田先生">宗田先生</option>
-          <option value="久保先生">久保先生</option>
+          {authors.map(a=><option key={a}>{a}</option>)}
         </select>
 
         <input value={text} onChange={(e)=>setText(e.target.value)} style={{fontSize:"16px"}} />
@@ -158,8 +189,30 @@ function Item({ item, addComment, editComment, deleteComment, deleteItem, press,
         </button>
       </div>
 
+      {/* 作者管理 */}
+      <div onClick={()=>setShowManage(!showManage)} style={{marginTop:5,cursor:"pointer"}}>
+        👥 コメントする人管理 {showManage ? "▲" : "▼"}
+      </div>
+
+      {showManage && (
+        <>
+          <div style={{display:"flex",gap:5}}>
+            <input value={newAuthor} onChange={(e)=>setNewAuthor(e.target.value)} style={{fontSize:"16px"}} />
+            <button onClick={addAuthor}>追加</button>
+          </div>
+
+          {authors.map(a=>(
+            <div key={a} style={{display:"flex",justifyContent:"space-between"}}>
+              {a}
+              <button onClick={()=>deleteAuthor(a)}>✕</button>
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* コメント一覧 */}
       {(item.comments || []).map((c, i) => (
-        <div key={i} style={{...getCommentStyle(c.author),padding:8,marginTop:5,borderRadius:10}}>
+        <div key={i} style={{...getCommentStyle(c.author),padding:6,marginTop:4,borderRadius:10}}>
           {editIndex===i ? (
             <>
               <input value={editText} onChange={(e)=>setEditText(e.target.value)} style={{fontSize:"16px"}} />
@@ -182,7 +235,7 @@ function Item({ item, addComment, editComment, deleteComment, deleteItem, press,
 
 /* スタイル */
 const page={padding:20,minHeight:"100vh",background:"linear-gradient(135deg,#667eea,#f7971e)"};
-const card={background:"white",padding:12,marginBottom:10,borderRadius:12};
+const card={background:"white",padding:10,marginBottom:8,borderRadius:10};
 const homeBtn={position:"fixed",top:15,left:15};
 const row={display:"flex",gap:8};
 const arrowBtn={background:"#eee",borderRadius:10,padding:"5px 10px"};
@@ -192,7 +245,7 @@ const sendBtn={background:"#4facfe",color:"white",border:"none",borderRadius:8,p
 const getConditionStyle=(v)=>({
   background:v==="○"?"#4facfe":v==="△"?"#f9c74f":"#f94144",
   color:"white",
-  padding:"5px 10px",
+  padding:"4px 8px",
   borderRadius:10
 });
 
@@ -201,5 +254,6 @@ const getCommentStyle=(a)=>{
   if(a==="久保先生") return {background:"#e0ffe0",borderLeft:"5px solid #43aa8b"};
   return {background:"#e0f0ff",borderLeft:"5px solid #4facfe"};
 };
+
 
 
