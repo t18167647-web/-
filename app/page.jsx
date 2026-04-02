@@ -2,46 +2,40 @@
 import Link from "next/link";
 
 export default function Home() {
-  const press = (e) => (e.currentTarget.style.transform = "scale(0.9)");
-  const release = (e) => (e.currentTarget.style.transform = "scale(1)");
-
   return (
-    <div style={container}>
-      <h1 style={title}>⚾ 投手管理</h1>
+    <div style={page}>
+      <h1 style={{marginBottom:30}}>投手管理</h1>
 
       <Link href="/input">
-        <button style={btn} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>
-          ✏️ 入力
-        </button>
+        <button style={mainBtn}>✏️ 入力する</button>
       </Link>
 
       <Link href="/table">
-        <button style={btn} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>
-          📊 結果
-        </button>
+        <button style={mainBtn}>📊 結果を見る</button>
       </Link>
     </div>
   );
 }
 
-const container = {
-  height: "100vh",
-  background: "linear-gradient(135deg, #4facfe, #43e97b)",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  color: "white",
+const page={
+  padding:20,
+  minHeight:"100vh",
+  display:"flex",
+  flexDirection:"column",
+  justifyContent:"center",
+  background:"linear-gradient(135deg,#667eea,#f7971e)"
 };
 
-const title = { fontSize: 34, marginBottom: 30 };
-
-const btn = {
-  margin: 10,
-  padding: "15px 25px",
-  borderRadius: 15,
-  border: "none",
-  background: "white",
-  boxShadow: "0 6px 15px rgba(0,0,0,0.2)",
+const mainBtn={
+  width:"100%",
+  padding:"20px",
+  fontSize:"18px",
+  borderRadius:"20px",
+  border:"none",
+  background:"linear-gradient(135deg,#4facfe,#43e97b)",
+  color:"white",
+  marginBottom:"15px",
+  boxShadow:"0 6px 15px rgba(0,0,0,0.2)"
 };
+
 

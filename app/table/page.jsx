@@ -17,10 +17,8 @@ export default function Page() {
 
   useEffect(() => {
     const savedPlayers = JSON.parse(localStorage.getItem("players")) || [];
-
     setPlayers(savedPlayers);
     if (savedPlayers.length > 0) setCurrentPlayer(savedPlayers[0]);
-
     fetchData();
   }, []);
 
@@ -36,14 +34,12 @@ export default function Page() {
   const press = (e) => (e.currentTarget.style.transform = "scale(0.9)");
   const release = (e) => (e.currentTarget.style.transform = "scale(1)");
 
-  // 🔥 データ削除（Firebase）
   const deleteItem = async (id) => {
     if (!confirm("このデータ削除する？")) return;
     await deleteDoc(doc(db, "items", id));
     fetchData();
   };
 
-  // 🔥 コメント追加
   const addComment = async (id, text, author) => {
     const item = items.find(i => i.id === id);
     const updated = [...(item.comments || []), { text, author }];
@@ -55,7 +51,6 @@ export default function Page() {
     fetchData();
   };
 
-  // 🔥 コメント編集
   const editComment = async (id, index, newText) => {
     const item = items.find(i => i.id === id);
     const c = [...(item.comments || [])];
@@ -68,7 +63,6 @@ export default function Page() {
     fetchData();
   };
 
-  // 🔥 コメント削除
   const deleteComment = async (id, index) => {
     const item = items.find(i => i.id === id);
     const updated = item.comments.filter((_, i) => i !== index);
@@ -89,16 +83,14 @@ export default function Page() {
   return (
     <div style={page}>
       <Link href="/">
-        <button style={homeBtn} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>
-          🏠
-        </button>
+        <button style={homeBtn} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>🏠</button>
       </Link>
 
       <h1>📊 結果</h1>
 
       <div style={row}>
         <button style={arrowBtn} onClick={() => changePlayer("prev")} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>←</button>
-        <select value={currentPlayer} onChange={(e)=>setCurrentPlayer(e.target.value)}>
+        <select value={currentPlayer} onChange={(e)=>setCurrentPlayer(e.target.value)} style={{fontSize:"16px"}}>
           {players.map(p=><option key={p}>{p}</option>)}
         </select>
         <button style={arrowBtn} onClick={() => changePlayer("next")} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>→</button>
@@ -139,7 +131,7 @@ function Item({ item, addComment, editComment, deleteComment, deleteItem, press,
         {item.type}
       </p>
 
-      <div style={{ display: "flex", gap: 10 }}>
+      <div style={{ display: "flex", gap: 8 }}>
         <span style={getConditionStyle(item.shoulder)}>肩:{item.shoulder}</span>
         <span style={getConditionStyle(item.elbow)}>肘:{item.elbow}</span>
       </div>
@@ -149,13 +141,13 @@ function Item({ item, addComment, editComment, deleteComment, deleteItem, press,
       </div>
 
       <div style={{ marginTop: 10 }}>
-        <select value={author} onChange={(e)=>setAuthor(e.target.value)}>
+        <select value={author} onChange={(e)=>setAuthor(e.target.value)} style={{fontSize:"16px"}}>
           <option value={item.player}>{item.player}</option>
           <option value="宗田先生">宗田先生</option>
           <option value="久保先生">久保先生</option>
         </select>
 
-        <input value={text} onChange={(e)=>setText(e.target.value)} />
+        <input value={text} onChange={(e)=>setText(e.target.value)} style={{fontSize:"16px"}} />
 
         <button style={sendBtn} onClick={()=>{
           if(!text) return;
@@ -170,7 +162,7 @@ function Item({ item, addComment, editComment, deleteComment, deleteItem, press,
         <div key={i} style={{...getCommentStyle(c.author),padding:8,marginTop:5,borderRadius:10}}>
           {editIndex===i ? (
             <>
-              <input value={editText} onChange={(e)=>setEditText(e.target.value)} />
+              <input value={editText} onChange={(e)=>setEditText(e.target.value)} style={{fontSize:"16px"}} />
               <button onClick={()=>{editComment(item.id,i,editText);setEditIndex(null);}}>保存</button>
             </>
           ) : (
@@ -188,11 +180,11 @@ function Item({ item, addComment, editComment, deleteComment, deleteItem, press,
   );
 }
 
-/* スタイル（一切変更なし） */
+/* スタイル */
 const page={padding:20,minHeight:"100vh",background:"linear-gradient(135deg,#667eea,#f7971e)"};
-const card={background:"white",padding:15,marginBottom:15,borderRadius:15};
+const card={background:"white",padding:12,marginBottom:10,borderRadius:12};
 const homeBtn={position:"fixed",top:15,left:15};
-const row={display:"flex",gap:10};
+const row={display:"flex",gap:8};
 const arrowBtn={background:"#eee",borderRadius:10,padding:"5px 10px"};
 const deleteBtn={background:"#f94144",color:"white",border:"none",borderRadius:8};
 const sendBtn={background:"#4facfe",color:"white",border:"none",borderRadius:8,padding:"5px 10px"};
@@ -209,4 +201,5 @@ const getCommentStyle=(a)=>{
   if(a==="久保先生") return {background:"#e0ffe0",borderLeft:"5px solid #43aa8b"};
   return {background:"#e0f0ff",borderLeft:"5px solid #4facfe"};
 };
+
 

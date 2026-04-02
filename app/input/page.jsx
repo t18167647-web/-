@@ -54,7 +54,7 @@ export default function InputPage() {
     else setPlayer(players[(i - 1 + players.length) % players.length]);
   };
 
-  // 🔥 Firebase保存に変更（ここだけ中身変えてる）
+  // 🔥 Firebase保存
   const handleSubmit = async () => {
     if (!player) return alert("選手選んで");
 
@@ -81,18 +81,20 @@ export default function InputPage() {
 
       <h1>✏️ 入力</h1>
 
+      {/* 日付 */}
       <div style={card}>
         <p>📅 日付</p>
-        <input type="date" value={date} onChange={(e)=>setDate(e.target.value)} />
+        <input type="date" value={date} onChange={(e)=>setDate(e.target.value)} style={{fontSize:"16px"}} />
       </div>
 
+      {/* 選手 */}
       <div style={card}>
         <p>👤 選手</p>
 
         <div style={row}>
           <button style={arrowBtn} onClick={()=>changePlayer("prev")} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>←</button>
 
-          <select value={player} onChange={(e)=>setPlayer(e.target.value)}>
+          <select value={player} onChange={(e)=>setPlayer(e.target.value)} style={{fontSize:"16px"}}>
             <option value="">選択</option>
             {players.map(p=><option key={p}>{p}</option>)}
           </select>
@@ -100,6 +102,7 @@ export default function InputPage() {
           <button style={arrowBtn} onClick={()=>changePlayer("next")} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>→</button>
         </div>
 
+        {/* 管理 */}
         <div onClick={()=>setShowManage(!showManage)} style={toggleHeader}>
           👥 選手管理 {showManage ? "▲" : "▼"}
         </div>
@@ -107,7 +110,7 @@ export default function InputPage() {
         {showManage && (
           <>
             <div style={{display:"flex",gap:5}}>
-              <input value={newPlayer} onChange={(e)=>setNewPlayer(e.target.value)} style={inputSmall}/>
+              <input value={newPlayer} onChange={(e)=>setNewPlayer(e.target.value)} style={{...inputSmall,fontSize:"16px"}}/>
               <button onClick={addPlayer}>追加</button>
             </div>
 
@@ -121,9 +124,10 @@ export default function InputPage() {
         )}
       </div>
 
+      {/* 投球タイプ */}
       <div style={card}>
         <p>⚾ 投球タイプ</p>
-        <select value={type} onChange={(e)=>setType(e.target.value)} style={selectStyle}>
+        <select value={type} onChange={(e)=>setType(e.target.value)} style={{...selectStyle,fontSize:"16px"}}>
           <option value="">選択</option>
           <option>ブルペン</option>
           <option>実践練習</option>
@@ -131,11 +135,13 @@ export default function InputPage() {
         </select>
       </div>
 
+      {/* 球数 */}
       <div style={card}>
         <p>球数（未入力OK）</p>
-        <input type="number" value={count} onChange={(e)=>setCount(e.target.value)} />
+        <input type="number" value={count} onChange={(e)=>setCount(e.target.value)} style={{fontSize:"16px"}} />
       </div>
 
+      {/* コンディション */}
       <div style={card}>
         <p>💪 コンディション</p>
 
@@ -182,12 +188,13 @@ export default function InputPage() {
         </div>
       </div>
 
+      {/* コメント */}
       <div style={card}>
         <input
           value={initialComment}
           onChange={(e)=>setInitialComment(e.target.value)}
           placeholder="コメント"
-          style={{width:"100%",padding:10}}
+          style={{width:"100%",padding:10,fontSize:"16px"}}
         />
       </div>
 
@@ -196,12 +203,12 @@ export default function InputPage() {
   );
 }
 
-/* スタイルそのまま */
+/* スタイル */
 const page={padding:20,minHeight:"100vh",background:"linear-gradient(135deg,#4facfe,#43e97b)"};
-const card={background:"white",padding:15,marginBottom:15,borderRadius:15,boxShadow:"0 6px 15px rgba(0,0,0,0.15)"};
+const card={background:"white",padding:12,marginBottom:10,borderRadius:12,boxShadow:"0 6px 15px rgba(0,0,0,0.15)"};
 const saveBtn={padding:15,width:"100%",background:"linear-gradient(135deg,#36d1dc,#5b86e5)",color:"white",border:"none",borderRadius:15};
 const homeBtn={position:"fixed",top:15,left:15};
-const row={display:"flex",gap:10};
+const row={display:"flex",gap:8};
 const arrowBtn={background:"#f0f0f0",border:"none",borderRadius:10,padding:"8px 12px"};
 const toggleHeader={cursor:"pointer",fontWeight:"bold"};
 const inputSmall={flex:1};
@@ -209,3 +216,4 @@ const playerRow={display:"flex",justifyContent:"space-between"};
 const selectStyle={width:"100%",padding:10,borderRadius:10};
 const btnGroup={display:"flex",justifyContent:"space-around"};
 const circleBtn={width:60,height:60,borderRadius:"50%",border:"none",fontSize:18,fontWeight:"bold",boxShadow:"0 3px 8px rgba(0,0,0,0.2)",transition:"all 0.1s"};
+
