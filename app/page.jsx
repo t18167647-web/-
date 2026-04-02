@@ -2,17 +2,39 @@
 import Link from "next/link";
 
 export default function Home() {
+  const press = (e) => {
+    e.currentTarget.style.transform = "scale(0.9)";
+  };
+
+  const release = (e) => {
+    e.currentTarget.style.transform = "scale(1)";
+  };
+
   return (
     <div style={container}>
       <h1 style={title}>⚾ 投手管理アプリ</h1>
-      <p style={{ marginBottom: 30 }}>肩・肘・球数をしっかり管理</p>
+      <p>肩・肘・球数を管理</p>
 
       <Link href="/input">
-        <button style={btn}>✏️ 入力する</button>
+        <button
+          style={btn}
+          onMouseDown={press}
+          onMouseUp={release}
+          onMouseLeave={release}
+        >
+          ✏️ 入力する
+        </button>
       </Link>
 
       <Link href="/table">
-        <button style={btn}>📊 結果を見る</button>
+        <button
+          style={btn}
+          onMouseDown={press}
+          onMouseUp={release}
+          onMouseLeave={release}
+        >
+          📊 結果を見る
+        </button>
       </Link>
     </div>
   );
@@ -34,8 +56,11 @@ const title = {
 
 const btn = {
   margin: 10,
-  padding: "12px 20px",
-  fontSize: 16,
+  padding: "15px 25px",
+  fontSize: 18,
   borderRadius: 10,
   border: "none",
+  background: "white",
+  color: "#333",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
 };

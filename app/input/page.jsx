@@ -1,15 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function InputPage() {
   const [players, setPlayers] = useState([]);
-  const [newPlayer, setNewPlayer] = useState("");
   const [player, setPlayer] = useState("");
   const [type, setType] = useState("");
   const [count, setCount] = useState("");
   const [shoulder, setShoulder] = useState("");
   const [elbow, setElbow] = useState("");
   const [initialComment, setInitialComment] = useState("");
+  const [date, setDate] = useState("");
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("players"));
@@ -20,21 +21,17 @@ export default function InputPage() {
       localStorage.setItem("players", JSON.stringify(initial));
       setPlayers(initial);
     }
+
+    const today = new Date().toISOString().split("T")[0];
+    setDate(today);
   }, []);
 
-  const savePlayers = (list) => {
-    setPlayers(list);
-    localStorage.setItem("players", JSON.stringify(list));
+  const press = (e) => {
+    e.currentTarget.style.transform = "scale(0.9)";
   };
 
-  const addPlayer = () => {
-    if (!newPlayer) return;
-    savePlayers([...players, newPlayer]);
-    setNewPlayer("");
-  };
-
-  const deletePlayer = (name) => {
-    savePlayers(players.filter((p) => p !== name));
+  const release = (e) => {
+    e.currentTarget.style.transform = "scale(1)";
   };
 
   const handleSubmit = () => {
@@ -46,7 +43,7 @@ export default function InputPage() {
       shoulder,
       elbow,
       initialComment,
-      date: new Date().toLocaleString(),
+      date,
       comments: [],
     };
 
@@ -58,7 +55,24 @@ export default function InputPage() {
 
   return (
     <div style={page}>
+      {/* 🏠 ホーム */}
+      <Link href="/">
+        <button
+          style={homeBtn}
+          onMouseDown={press}
+          onMouseUp={release}
+          onMouseLeave={release}
+        >
+          🏠
+        </button>
+      </Link>
+
       <h1>✏️ 入力ページ</h1>
+
+      <div style={card}>
+        <p>📅 日付</p>
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      </div>
 
       <div style={card}>
         <p>👤 選手</p>
@@ -68,21 +82,6 @@ export default function InputPage() {
             <option key={p}>{p}</option>
           ))}
         </select>
-
-        <div>
-          <input
-            value={newPlayer}
-            onChange={(e) => setNewPlayer(e.target.value)}
-            placeholder="選手追加"
-          />
-          <button onClick={addPlayer}>追加</button>
-        </div>
-
-        {players.map((p) => (
-          <div key={p}>
-            {p} <button onClick={() => deletePlayer(p)}>削除</button>
-          </div>
-        ))}
       </div>
 
       <div style={card}>
@@ -99,25 +98,31 @@ export default function InputPage() {
 
       <div style={card}>
         <p>肩</p>
-        <button style={{ background: "blue", color: "white" }} onClick={() => setShoulder("○")}>○</button>
-        <button style={{ background: "gold" }} onClick={() => setShoulder("△")}>△</button>
-        <button style={{ background: "red", color: "white" }} onClick={() => setShoulder("×")}>×</button>
+        <button onMouseDown={press} onMouseUp={release} onMouseLeave={release} onClick={() => setShoulder("○")}>○</button>
+        <button onMouseDown={press} onMouseUp={release} onMouseLeave={release} onClick={() => setShoulder("△")}>△</button>
+        <button onMouseDown={press} onMouseUp={release} onMouseLeave={release} onClick={() => setShoulder("×")}>×</button>
 
         <p>肘</p>
-        <button style={{ background: "blue", color: "white" }} onClick={() => setElbow("○")}>○</button>
-        <button style={{ background: "gold" }} onClick={() => setElbow("△")}>△</button>
-        <button style={{ background: "red", color: "white" }} onClick={() => setElbow("×")}>×</button>
+        <button onMouseDown={press} onMouseUp={release} onMouseLeave={release} onClick={() => setElbow("○")}>○</button>
+        <button onMouseDown={press} onMouseUp={release} onMouseLeave={release} onClick={() => setElbow("△")}>△</button>
+        <button onMouseDown={press} onMouseUp={release} onMouseLeave={release} onClick={() => setElbow("×")}>×</button>
       </div>
 
       <div style={card}>
-        <p>💬 初期コメント</p>
+        <p>💬 コメント</p>
         <input
           value={initialComment}
           onChange={(e) => setInitialComment(e.target.value)}
         />
       </div>
 
-      <button style={saveBtn} onClick={handleSubmit}>
+      <button
+        style={saveBtn}
+        onClick={handleSubmit}
+        onMouseDown={press}
+        onMouseUp={release}
+        onMouseLeave={release}
+      >
         保存
       </button>
     </div>
@@ -144,6 +149,18 @@ const saveBtn = {
   color: "white",
   border: "none",
   borderRadius: 10,
+};
+
+const homeBtn = {
+  position: "fixed",
+  top: 15,
+  left: 15,
+  padding: "12px",
+  borderRadius: "50%",
+  background: "#333",
+  color: "white",
+  border: "none",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
 };
 
 
