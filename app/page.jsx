@@ -34,19 +34,14 @@ const container = {
   color: "white",
 };
 
-const title = {
-  fontSize: 34,
-  fontWeight: "bold",
-  marginBottom: 30,
-};
+const title = { fontSize: 34, marginBottom: 30 };
 
 const btn = {
   margin: 10,
   padding: "15px 25px",
-  fontSize: 18,
   borderRadius: 15,
   border: "none",
   background: "white",
-  color: "#333",
   boxShadow: "0 6px 15px rgba(0,0,0,0.2)",
 };
+
