@@ -12,6 +12,7 @@ export default function InputPage() {
   const [elbow, setElbow] = useState("");
   const [initialComment, setInitialComment] = useState("");
   const [date, setDate] = useState("");
+  const [showManage, setShowManage] = useState(false);
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("players"));
@@ -45,10 +46,10 @@ export default function InputPage() {
   };
 
   const changePlayer = (dir) => {
-    const index = players.indexOf(player);
-    if (index === -1) return;
-    if (dir === "next") setPlayer(players[(index + 1) % players.length]);
-    else setPlayer(players[(index - 1 + players.length) % players.length]);
+    const i = players.indexOf(player);
+    if (i === -1) return;
+    if (dir === "next") setPlayer(players[(i + 1) % players.length]);
+    else setPlayer(players[(i - 1 + players.length) % players.length]);
   };
 
   const handleSubmit = () => {
@@ -56,7 +57,7 @@ export default function InputPage() {
       id: Date.now(),
       player,
       type,
-      count: Number(count),
+      count: Number(count) || 0,
       shoulder,
       elbow,
       initialComment,
@@ -66,6 +67,7 @@ export default function InputPage() {
 
     const existing = JSON.parse(localStorage.getItem("items")) || [];
     localStorage.setItem("items", JSON.stringify([...existing, newItem]));
+
     alert("保存成功！");
   };
 
@@ -75,74 +77,106 @@ export default function InputPage() {
         <button style={homeBtn} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>🏠</button>
       </Link>
 
-      <h1>✏️ 入力ページ</h1>
+      <h1>✏️ 入力</h1>
 
       <div style={card}>
         <p>📅 日付</p>
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <input type="date" value={date} onChange={(e)=>setDate(e.target.value)} />
       </div>
 
       <div style={card}>
         <p>👤 選手</p>
+
         <div style={row}>
-          <button onClick={() => changePlayer("prev")} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>←</button>
+          <button onClick={()=>changePlayer("prev")} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>←</button>
           <select value={player} onChange={(e)=>setPlayer(e.target.value)}>
             <option value="">選択</option>
             {players.map(p=><option key={p}>{p}</option>)}
           </select>
-          <button onClick={() => changePlayer("next")} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>→</button>
+          <button onClick={()=>changePlayer("next")} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>→</button>
         </div>
 
-        <input value={newPlayer} onChange={(e)=>setNewPlayer(e.target.value)} placeholder="追加"/>
-        <button onClick={addPlayer} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>追加</button>
+        {/* コンパクト管理 */}
+        <div onClick={()=>setShowManage(!showManage)} style={toggleHeader}>
+          👥 選手管理 {showManage ? "▲" : "▼"}
+        </div>
 
-        {players.map(p=>(
-          <div key={p}>{p}
-            <button onClick={()=>deletePlayer(p)} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>削除</button>
-          </div>
-        ))}
+        {showManage && (
+          <>
+            <div style={{display:"flex",gap:5}}>
+              <input value={newPlayer} onChange={(e)=>setNewPlayer(e.target.value)} style={inputSmall}/>
+              <button onClick={addPlayer} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>追加</button>
+            </div>
+
+            {players.map(p=>(
+              <div key={p} style={playerRow}>
+                {p}
+                <button onClick={()=>deletePlayer(p)} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>✕</button>
+              </div>
+            ))}
+          </>
+        )}
       </div>
 
       <div style={card}>
         <p>⚾ 投球タイプ</p>
-        {["ブルペン","実践練習","試合"].map(t=>(
-          <button key={t} onClick={()=>setType(t)} style={{
-            background:type===t? (t==="試合"?"red":t==="実践練習"?"orange":"blue"):"#eee",
-            color:type===t?"white":"black"
-          }} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>{t}</button>
-        ))}
+        <select value={type} onChange={(e)=>setType(e.target.value)} style={selectStyle}>
+          <option value="">選択</option>
+          <option value="ブルペン">ブルペン</option>
+          <option value="実践練習">実践練習</option>
+          <option value="試合">試合</option>
+        </select>
       </div>
 
       <div style={card}>
-        <p>球数</p>
+        <p>球数（未入力OK）</p>
         <input type="number" value={count} onChange={(e)=>setCount(e.target.value)} />
       </div>
 
       <div style={card}>
-        <p>肩・肘</p>
-        {["○","△","×"].map(v=>(
-          <button key={v} onClick={()=>setShoulder(v)} style={{
-            background:shoulder===v?(v==="○"?"blue":v==="△"?"gold":"red"):"#eee"
-          }} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>{v}</button>
-        ))}
-        {["○","△","×"].map(v=>(
-          <button key={v} onClick={()=>setElbow(v)} style={{
-            background:elbow===v?(v==="○"?"blue":v==="△"?"gold":"red"):"#eee"
-          }} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>{v}</button>
-        ))}
+        <p>💪 コンディション</p>
+
+        <p>肩</p>
+        <div style={btnGroup}>
+          {["○","△","×"].map(v=>(
+            <button key={v} onClick={()=>setShoulder(v)} style={{
+              ...circleBtn,
+              background:shoulder===v?(v==="○"?"#4facfe":v==="△"?"#f9c74f":"#f94144"):"#eee"
+            }} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>{v}</button>
+          ))}
+        </div>
+
+        <p>肘</p>
+        <div style={btnGroup}>
+          {["○","△","×"].map(v=>(
+            <button key={v} onClick={()=>setElbow(v)} style={{
+              ...circleBtn,
+              background:elbow===v?(v==="○"?"#4facfe":v==="△"?"#f9c74f":"#f94144"):"#eee"
+            }} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>{v}</button>
+          ))}
+        </div>
       </div>
 
       <div style={card}>
         <input value={initialComment} onChange={(e)=>setInitialComment(e.target.value)} placeholder="コメント"/>
       </div>
 
-      <button style={saveBtn} onClick={handleSubmit} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>保存</button>
+      <button style={saveBtn} onClick={handleSubmit} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>
+        保存
+      </button>
     </div>
   );
 }
 
-const page={padding:20,background:"#f5f5f5",minHeight:"100vh"};
-const card={background:"white",padding:15,marginBottom:10,borderRadius:10};
-const saveBtn={padding:15,width:"100%",background:"#4facfe",color:"white",border:"none"};
-const homeBtn={position:"fixed",top:15,left:15,background:"#333",color:"white",borderRadius:"50%",padding:12,boxShadow:"0 4px 10px rgba(0,0,0,0.3)"};
+const page={padding:20,minHeight:"100vh",background:"linear-gradient(135deg,#4facfe,#43e97b)"};
+const card={background:"white",padding:15,marginBottom:15,borderRadius:15,boxShadow:"0 6px 15px rgba(0,0,0,0.15)"};
+const saveBtn={padding:15,width:"100%",background:"linear-gradient(135deg,#36d1dc,#5b86e5)",color:"white",border:"none",borderRadius:15};
+const homeBtn={position:"fixed",top:15,left:15,background:"#333",color:"white",borderRadius:"50%",padding:12};
 const row={display:"flex",gap:10};
+const toggleHeader={fontWeight:"bold",cursor:"pointer"};
+const inputSmall={flex:1};
+const playerRow={display:"flex",justifyContent:"space-between"};
+const selectStyle={width:"100%",padding:10,borderRadius:10};
+const btnGroup={display:"flex",justifyContent:"space-around"};
+const circleBtn={width:60,height:60,borderRadius:"50%",border:"none"};
+

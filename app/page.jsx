@@ -7,8 +7,7 @@ export default function Home() {
 
   return (
     <div style={container}>
-      <h1 style={title}>⚾ 投手管理アプリ</h1>
-      <p>球数・肩・肘をしっかり管理</p>
+      <h1 style={title}>⚾ 投手管理</h1>
 
       <Link href="/input">
         <button style={btn} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>
@@ -27,7 +26,7 @@ export default function Home() {
 
 const container = {
   height: "100vh",
-  background: "linear-gradient(to bottom, #4facfe, #00f2fe)",
+  background: "linear-gradient(135deg, #4facfe, #43e97b)",
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
@@ -35,15 +34,19 @@ const container = {
   color: "white",
 };
 
-const title = { fontSize: 30 };
+const title = {
+  fontSize: 34,
+  fontWeight: "bold",
+  marginBottom: 30,
+};
 
 const btn = {
   margin: 10,
   padding: "15px 25px",
   fontSize: 18,
-  borderRadius: 10,
+  borderRadius: 15,
   border: "none",
   background: "white",
-  boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+  color: "#333",
+  boxShadow: "0 6px 15px rgba(0,0,0,0.2)",
 };
-
