@@ -2,206 +2,149 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-export default function Page() {
-  const [items, setItems] = useState([]);
+export default function InputPage() {
   const [players, setPlayers] = useState([]);
-  const [currentPlayer, setCurrentPlayer] = useState("");
+  const [player, setPlayer] = useState("");
+  const [newPlayer, setNewPlayer] = useState("");
+  const [type, setType] = useState("");
+  const [count, setCount] = useState("");
+  const [shoulder, setShoulder] = useState("");
+  const [elbow, setElbow] = useState("");
+  const [initialComment, setInitialComment] = useState("");
+  const [date, setDate] = useState("");
 
   useEffect(() => {
-    const savedItems = JSON.parse(localStorage.getItem("items")) || [];
-    const savedPlayers = JSON.parse(localStorage.getItem("players")) || [];
-
-    setItems(savedItems);
-    setPlayers(savedPlayers);
-
-    if (savedPlayers.length > 0) {
-      setCurrentPlayer(savedPlayers[0]);
+    const saved = JSON.parse(localStorage.getItem("players"));
+    if (saved) setPlayers(saved);
+    else {
+      const initial = ["熊","坂田","末永","五島","松尾"];
+      localStorage.setItem("players", JSON.stringify(initial));
+      setPlayers(initial);
     }
+    setDate(new Date().toISOString().split("T")[0]);
   }, []);
 
-  const saveToLocal = (data) => {
-    localStorage.setItem("items", JSON.stringify(data));
+  const press = (e) => (e.currentTarget.style.transform = "scale(0.9)");
+  const release = (e) => (e.currentTarget.style.transform = "scale(1)");
+
+  const savePlayers = (list) => {
+    setPlayers(list);
+    localStorage.setItem("players", JSON.stringify(list));
   };
 
-  const handleAddComment = (id, text, author) => {
-    const updated = items.map((item) => {
-      if (item.id === id) {
-        return {
-          ...item,
-          comments: [...(item.comments || []), { text, author }],
-        };
-      }
-      return item;
-    });
-
-    setItems(updated);
-    saveToLocal(updated);
+  const addPlayer = () => {
+    if (!newPlayer || players.includes(newPlayer)) return;
+    savePlayers([...players, newPlayer]);
+    setNewPlayer("");
   };
 
-  const press = (e) => {
-    e.currentTarget.style.transform = "scale(0.9)";
+  const deletePlayer = (name) => {
+    const updated = players.filter((p) => p !== name);
+    savePlayers(updated);
+    if (player === name) setPlayer(updated[0] || "");
   };
 
-  const release = (e) => {
-    e.currentTarget.style.transform = "scale(1)";
+  const changePlayer = (dir) => {
+    const index = players.indexOf(player);
+    if (index === -1) return;
+    if (dir === "next") setPlayer(players[(index + 1) % players.length]);
+    else setPlayer(players[(index - 1 + players.length) % players.length]);
   };
 
-  const isThisWeek = (dateStr) => {
-    const now = new Date();
-    const d = new Date(dateStr);
+  const handleSubmit = () => {
+    const newItem = {
+      id: Date.now(),
+      player,
+      type,
+      count: Number(count),
+      shoulder,
+      elbow,
+      initialComment,
+      date,
+      comments: [],
+    };
 
-    const first = new Date(now);
-    first.setDate(now.getDate() - now.getDay());
-
-    const last = new Date(first);
-    last.setDate(first.getDate() + 6);
-
-    return d >= first && d <= last;
+    const existing = JSON.parse(localStorage.getItem("items")) || [];
+    localStorage.setItem("items", JSON.stringify([...existing, newItem]));
+    alert("保存成功！");
   };
-
-  const filtered = items.filter((i) => i.player === currentPlayer);
-
-  const weeklyTotal = filtered
-    .filter((i) => isThisWeek(i.date))
-    .reduce((sum, i) => sum + (i.count || 0), 0);
 
   return (
     <div style={page}>
-      {/* 🏠 ホームボタン */}
       <Link href="/">
-        <button
-          style={homeBtn}
-          onMouseDown={press}
-          onMouseUp={release}
-          onMouseLeave={release}
-        >
-          🏠
-        </button>
+        <button style={homeBtn} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>🏠</button>
       </Link>
 
-      <h1>📊 結果ページ</h1>
+      <h1>✏️ 入力ページ</h1>
 
-      {/* 選手 */}
-      <select
-        value={currentPlayer}
-        onChange={(e) => setCurrentPlayer(e.target.value)}
-      >
-        {players.map((p) => (
-          <option key={p}>{p}</option>
-        ))}
-      </select>
-
-      {/* 球数 */}
-      <p style={{ color: weeklyTotal >= 300 ? "red" : "black" }}>
-        今週の球数: {weeklyTotal}球
-        {weeklyTotal >= 300 && " ⚠ 投げすぎ注意"}
-      </p>
-
-      {/* データ */}
-      {filtered.map((item) => (
-        <Item
-          key={item.id}
-          data={item}
-          onAddComment={handleAddComment}
-          press={press}
-          release={release}
-        />
-      ))}
-    </div>
-  );
-}
-
-function Item({ data, onAddComment, press, release }) {
-  const [text, setText] = useState("");
-  const [author, setAuthor] = useState("選手");
-
-  return (
-    <div style={card}>
-      <p style={{ color: "gray" }}>{data.date}</p>
-      <h3>{data.player}</h3>
-
-      <p>⚾ {data.count}球</p>
-      <p>{data.type}</p>
-      <p>肩:{data.shoulder} / 肘:{data.elbow}</p>
-
-      <div style={initComment}>
-        💬 {data.initialComment}
+      <div style={card}>
+        <p>📅 日付</p>
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
       </div>
 
-      {/* 入力 */}
-      <div>
-        <select value={author} onChange={(e) => setAuthor(e.target.value)}>
-          <option>選手</option>
-          <option>指導者</option>
-        </select>
-
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-        />
-
-        <button
-          onClick={() => {
-            if (!text) return;
-            onAddComment(data.id, text, author);
-            setText("");
-          }}
-          onMouseDown={press}
-          onMouseUp={release}
-          onMouseLeave={release}
-        >
-          送信
-        </button>
-      </div>
-
-      {/* コメント */}
-      {(data.comments || []).map((c, i) => (
-        <div
-          key={i}
-          style={{
-            background:
-              c.author === "指導者" ? "#ffe0e0" : "#e0f0ff",
-            padding: 8,
-            marginTop: 5,
-            borderRadius: 10,
-          }}
-        >
-          {c.author}：{c.text}
+      <div style={card}>
+        <p>👤 選手</p>
+        <div style={row}>
+          <button onClick={() => changePlayer("prev")} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>←</button>
+          <select value={player} onChange={(e)=>setPlayer(e.target.value)}>
+            <option value="">選択</option>
+            {players.map(p=><option key={p}>{p}</option>)}
+          </select>
+          <button onClick={() => changePlayer("next")} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>→</button>
         </div>
-      ))}
+
+        <input value={newPlayer} onChange={(e)=>setNewPlayer(e.target.value)} placeholder="追加"/>
+        <button onClick={addPlayer} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>追加</button>
+
+        {players.map(p=>(
+          <div key={p}>{p}
+            <button onClick={()=>deletePlayer(p)} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>削除</button>
+          </div>
+        ))}
+      </div>
+
+      <div style={card}>
+        <p>⚾ 投球タイプ</p>
+        {["ブルペン","実践練習","試合"].map(t=>(
+          <button key={t} onClick={()=>setType(t)} style={{
+            background:type===t? (t==="試合"?"red":t==="実践練習"?"orange":"blue"):"#eee",
+            color:type===t?"white":"black"
+          }} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>{t}</button>
+        ))}
+      </div>
+
+      <div style={card}>
+        <p>球数</p>
+        <input type="number" value={count} onChange={(e)=>setCount(e.target.value)} />
+      </div>
+
+      <div style={card}>
+        <p>肩・肘</p>
+        {["○","△","×"].map(v=>(
+          <button key={v} onClick={()=>setShoulder(v)} style={{
+            background:shoulder===v?(v==="○"?"blue":v==="△"?"gold":"red"):"#eee"
+          }} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>{v}</button>
+        ))}
+        {["○","△","×"].map(v=>(
+          <button key={v} onClick={()=>setElbow(v)} style={{
+            background:elbow===v?(v==="○"?"blue":v==="△"?"gold":"red"):"#eee"
+          }} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>{v}</button>
+        ))}
+      </div>
+
+      <div style={card}>
+        <input value={initialComment} onChange={(e)=>setInitialComment(e.target.value)} placeholder="コメント"/>
+      </div>
+
+      <button style={saveBtn} onClick={handleSubmit} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>保存</button>
     </div>
   );
 }
 
-const page = {
-  padding: 20,
-  background: "#f5f5f5",
-  minHeight: "100vh",
-};
+const page={padding:20,background:"#f5f5f5",minHeight:"100vh"};
+const card={background:"white",padding:15,marginBottom:10,borderRadius:10};
+const saveBtn={padding:15,width:"100%",background:"#4facfe",color:"white",border:"none"};
+const homeBtn={position:"fixed",top:15,left:15,background:"#333",color:"white",borderRadius:"50%",padding:12,boxShadow:"0 4px 10px rgba(0,0,0,0.3)"};
+const row={display:"flex",gap:10};
 
-const card = {
-  background: "white",
-  padding: 15,
-  marginBottom: 15,
-  borderRadius: 10,
-};
-
-const initComment = {
-  background: "#eef",
-  padding: 8,
-  borderRadius: 5,
-  marginTop: 10,
-};
-
-const homeBtn = {
-  position: "fixed",
-  top: 15,
-  left: 15,
-  padding: "12px",
-  borderRadius: "50%",
-  background: "#333",
-  color: "white",
-  border: "none",
-  boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-};
 
