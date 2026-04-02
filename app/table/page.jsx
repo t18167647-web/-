@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { db } from "@/lib/firebase";
+import { db } from "../../lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 export default function Page() {
@@ -28,17 +28,16 @@ export default function Page() {
 
   return (
     <div style={{padding:20}}>
-      <Link href="/">
-        <button>🏠</button>
-      </Link>
-
+      <Link href="/"><button>🏠</button></Link>
       <h1>結果ページ</h1>
 
       <select value={currentPlayer} onChange={(e)=>setCurrentPlayer(e.target.value)}>
         {players.map(p=><option key={p}>{p}</option>)}
       </select>
 
-      {items.filter(i=>i.player===currentPlayer).map(item=>(
+      {items
+        .filter(i=>i.player===currentPlayer)
+        .map(item=>(
         <div key={item.id} style={{border:"1px solid #ccc",margin:10,padding:10}}>
           <p>{item.date}</p>
           <p>{item.count}球</p>
