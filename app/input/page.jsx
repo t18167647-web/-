@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { db } from "@/lib/firebase";
+import { collection, addDoc } from "firebase/firestore";
 
 export default function InputPage() {
   const [players, setPlayers] = useState([]);
@@ -52,9 +54,10 @@ export default function InputPage() {
     else setPlayer(players[(i - 1 + players.length) % players.length]);
   };
 
-  const handleSubmit = () => {
-    const newItem = {
-      id: Date.now(),
+  const handleSubmit = async () => {
+    if (!player) return alert("選手選んで");
+
+    await addDoc(collection(db, "items"), {
       player,
       type,
       count: Number(count) || 0,
@@ -63,10 +66,8 @@ export default function InputPage() {
       initialComment,
       date,
       comments: [],
-    };
-
-    const existing = JSON.parse(localStorage.getItem("items")) || [];
-    localStorage.setItem("items", JSON.stringify([...existing, newItem]));
+      createdAt: new Date(),
+    });
 
     alert("保存成功！");
   };
@@ -79,13 +80,11 @@ export default function InputPage() {
 
       <h1>✏️ 入力</h1>
 
-      {/* 日付 */}
       <div style={card}>
         <p>📅 日付</p>
         <input type="date" value={date} onChange={(e)=>setDate(e.target.value)} />
       </div>
 
-      {/* 選手 */}
       <div style={card}>
         <p>👤 選手</p>
 
@@ -100,7 +99,6 @@ export default function InputPage() {
           <button style={arrowBtn} onClick={()=>changePlayer("next")} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>→</button>
         </div>
 
-        {/* 管理 */}
         <div onClick={()=>setShowManage(!showManage)} style={toggleHeader}>
           👥 選手管理 {showManage ? "▲" : "▼"}
         </div>
@@ -122,7 +120,6 @@ export default function InputPage() {
         )}
       </div>
 
-      {/* 投球タイプ */}
       <div style={card}>
         <p>⚾ 投球タイプ</p>
         <select value={type} onChange={(e)=>setType(e.target.value)} style={selectStyle}>
@@ -133,13 +130,11 @@ export default function InputPage() {
         </select>
       </div>
 
-      {/* 球数 */}
       <div style={card}>
         <p>球数（未入力OK）</p>
         <input type="number" value={count} onChange={(e)=>setCount(e.target.value)} />
       </div>
 
-      {/* コンディション */}
       <div style={card}>
         <p>💪 コンディション</p>
 
@@ -186,7 +181,6 @@ export default function InputPage() {
         </div>
       </div>
 
-      {/* コメント */}
       <div style={card}>
         <input
           value={initialComment}
@@ -201,7 +195,7 @@ export default function InputPage() {
   );
 }
 
-/* スタイル */
+/* スタイル（完全そのまま） */
 const page={padding:20,minHeight:"100vh",background:"linear-gradient(135deg,#4facfe,#43e97b)"};
 const card={background:"white",padding:15,marginBottom:15,borderRadius:15,boxShadow:"0 6px 15px rgba(0,0,0,0.15)"};
 const saveBtn={padding:15,width:"100%",background:"linear-gradient(135deg,#36d1dc,#5b86e5)",color:"white",border:"none",borderRadius:15};
