@@ -27,6 +27,9 @@ export default function InputPage() {
     setDate(new Date().toISOString().split("T")[0]);
   }, []);
 
+  const press = (e) => (e.currentTarget.style.transform = "scale(0.9)");
+  const release = (e) => (e.currentTarget.style.transform = "scale(1)");
+
   const savePlayers = (list) => {
     setPlayers(list);
     localStorage.setItem("players", JSON.stringify(list));
@@ -51,6 +54,7 @@ export default function InputPage() {
     else setPlayer(players[(i - 1 + players.length) % players.length]);
   };
 
+  // 🔥 Firebase保存に変更（ここだけ中身変えてる）
   const handleSubmit = async () => {
     if (!player) return alert("選手選んで");
 
@@ -70,57 +74,138 @@ export default function InputPage() {
   };
 
   return (
-    <div style={{padding:20}}>
-      <Link href="/"><button>🏠</button></Link>
-      <h1>入力ページ</h1>
+    <div style={page}>
+      <Link href="/">
+        <button style={homeBtn} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>🏠</button>
+      </Link>
 
-      <input type="date" value={date} onChange={(e)=>setDate(e.target.value)} />
+      <h1>✏️ 入力</h1>
 
-      <div>
-        <button onClick={()=>changePlayer("prev")}>←</button>
-        <select value={player} onChange={(e)=>setPlayer(e.target.value)}>
-          <option value="">選択</option>
-          {players.map(p=><option key={p}>{p}</option>)}
-        </select>
-        <button onClick={()=>changePlayer("next")}>→</button>
+      <div style={card}>
+        <p>📅 日付</p>
+        <input type="date" value={date} onChange={(e)=>setDate(e.target.value)} />
       </div>
 
-      <input value={newPlayer} onChange={(e)=>setNewPlayer(e.target.value)} placeholder="追加"/>
-      <button onClick={addPlayer}>追加</button>
+      <div style={card}>
+        <p>👤 選手</p>
 
-      {players.map(p=>(
-        <div key={p}>
-          {p}
-          <button onClick={()=>deletePlayer(p)}>削除</button>
+        <div style={row}>
+          <button style={arrowBtn} onClick={()=>changePlayer("prev")} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>←</button>
+
+          <select value={player} onChange={(e)=>setPlayer(e.target.value)}>
+            <option value="">選択</option>
+            {players.map(p=><option key={p}>{p}</option>)}
+          </select>
+
+          <button style={arrowBtn} onClick={()=>changePlayer("next")} onMouseDown={press} onMouseUp={release} onMouseLeave={release}>→</button>
         </div>
-      ))}
 
-      <select value={type} onChange={(e)=>setType(e.target.value)}>
-        <option value="">選択</option>
-        <option>ブルペン</option>
-        <option>実践練習</option>
-        <option>試合</option>
-      </select>
+        <div onClick={()=>setShowManage(!showManage)} style={toggleHeader}>
+          👥 選手管理 {showManage ? "▲" : "▼"}
+        </div>
 
-      <input type="number" value={count} onChange={(e)=>setCount(e.target.value)} placeholder="球数"/>
+        {showManage && (
+          <>
+            <div style={{display:"flex",gap:5}}>
+              <input value={newPlayer} onChange={(e)=>setNewPlayer(e.target.value)} style={inputSmall}/>
+              <button onClick={addPlayer}>追加</button>
+            </div>
 
-      <div>
-        肩:
-        {["○","△","×"].map(v=>(
-          <button key={v} onClick={()=>setShoulder(v)}>{v}</button>
-        ))}
+            {players.map(p=>(
+              <div key={p} style={playerRow}>
+                {p}
+                <button onClick={()=>deletePlayer(p)}>✕</button>
+              </div>
+            ))}
+          </>
+        )}
       </div>
 
-      <div>
-        肘:
-        {["○","△","×"].map(v=>(
-          <button key={v} onClick={()=>setElbow(v)}>{v}</button>
-        ))}
+      <div style={card}>
+        <p>⚾ 投球タイプ</p>
+        <select value={type} onChange={(e)=>setType(e.target.value)} style={selectStyle}>
+          <option value="">選択</option>
+          <option>ブルペン</option>
+          <option>実践練習</option>
+          <option>試合</option>
+        </select>
       </div>
 
-      <input value={initialComment} onChange={(e)=>setInitialComment(e.target.value)} placeholder="コメント"/>
+      <div style={card}>
+        <p>球数（未入力OK）</p>
+        <input type="number" value={count} onChange={(e)=>setCount(e.target.value)} />
+      </div>
 
-      <button onClick={handleSubmit}>保存</button>
+      <div style={card}>
+        <p>💪 コンディション</p>
+
+        <p>肩</p>
+        <div style={btnGroup}>
+          {["○","△","×"].map(v=>(
+            <button
+              key={v}
+              onClick={()=>setShoulder(v)}
+              style={{
+                ...circleBtn,
+                background: shoulder===v ? (v==="○"?"#4facfe":v==="△"?"#f9c74f":"#f94144") : "#eee",
+                color: shoulder===v ? "white":"black",
+                transform: shoulder===v ? "scale(1.1)" : "scale(1)"
+              }}
+              onMouseDown={press}
+              onMouseUp={release}
+              onMouseLeave={release}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+
+        <p>肘</p>
+        <div style={btnGroup}>
+          {["○","△","×"].map(v=>(
+            <button
+              key={v}
+              onClick={()=>setElbow(v)}
+              style={{
+                ...circleBtn,
+                background: elbow===v ? (v==="○"?"#4facfe":v==="△"?"#f9c74f":"#f94144") : "#eee",
+                color: elbow===v ? "white":"black",
+                transform: elbow===v ? "scale(1.1)" : "scale(1)"
+              }}
+              onMouseDown={press}
+              onMouseUp={release}
+              onMouseLeave={release}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={card}>
+        <input
+          value={initialComment}
+          onChange={(e)=>setInitialComment(e.target.value)}
+          placeholder="コメント"
+          style={{width:"100%",padding:10}}
+        />
+      </div>
+
+      <button style={saveBtn} onClick={handleSubmit}>保存</button>
     </div>
   );
 }
+
+/* スタイルそのまま */
+const page={padding:20,minHeight:"100vh",background:"linear-gradient(135deg,#4facfe,#43e97b)"};
+const card={background:"white",padding:15,marginBottom:15,borderRadius:15,boxShadow:"0 6px 15px rgba(0,0,0,0.15)"};
+const saveBtn={padding:15,width:"100%",background:"linear-gradient(135deg,#36d1dc,#5b86e5)",color:"white",border:"none",borderRadius:15};
+const homeBtn={position:"fixed",top:15,left:15};
+const row={display:"flex",gap:10};
+const arrowBtn={background:"#f0f0f0",border:"none",borderRadius:10,padding:"8px 12px"};
+const toggleHeader={cursor:"pointer",fontWeight:"bold"};
+const inputSmall={flex:1};
+const playerRow={display:"flex",justifyContent:"space-between"};
+const selectStyle={width:"100%",padding:10,borderRadius:10};
+const btnGroup={display:"flex",justifyContent:"space-around"};
+const circleBtn={width:60,height:60,borderRadius:"50%",border:"none",fontSize:18,fontWeight:"bold",boxShadow:"0 3px 8px rgba(0,0,0,0.2)",transition:"all 0.1s"};
